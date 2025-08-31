@@ -1,7 +1,6 @@
 import { CCard, CCardBody, CCardHeader, CCardText, CCardTitle, CCol, CContainer, CLink, CLoadingButton, CRow } from '@coreui/react-pro';
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import GaugeChart from 'react-gauge-chart';
 import CampaignList from '../../components/campaigns/List';
 import { hasServiceRights, isSuperAdmin } from '../../utils/rights';
 import { GRAPH_COLORS } from '../../utils/constant';
@@ -35,6 +34,131 @@ import CampaignSVG from 'src/assets/icons/campaigns';
 import UserSVG from 'src/assets/icons/users';
 import TrainingSVG from 'src/assets/icons/training';
 import EmailTemplateSVG from 'src/assets/icons/email-templates';
+
+// Modern Gauge Component
+const ModernGauge = ({ value, title }) => {
+    const radius = 80;
+    const strokeWidth = 12;
+    const normalizedRadius = radius - strokeWidth * 2;
+    const circumference = normalizedRadius * 2 * Math.PI;
+    const strokeDasharray = `${circumference} ${circumference}`;
+    
+    // Calculate the stroke offset for a semi-circle (180 degrees)
+    const progress = value / 100;
+    const offset = circumference - (progress * circumference * 0.5); // 0.5 for semi-circle
+    
+    // Determine color based on risk score
+    const getGradientColors = (score) => {
+        if (score < 25) {
+            return { start: '#10B981', end: '#34D399' }; // Green
+        } else if (score < 50) {
+            return { start: '#F59E0B', end: '#FBBF24' }; // Yellow/Orange
+        } else {
+            return { start: '#EF4444', end: '#F87171' }; // Red
+        }
+    };
+    
+    const colors = getGradientColors(value);
+    const gradientId = `gradient-${Math.random().toString(36).substr(2, 9)}`;
+    
+    return (
+        <div style={{ 
+            display: 'flex', 
+            flexDirection: 'column', 
+            alignItems: 'center',
+            width: '100%',
+            height: '100%',
+            justifyContent: 'center'
+        }}>
+            <div style={{ position: 'relative', marginBottom: '1rem' }}>
+                <svg
+                    height={radius + strokeWidth}
+                    width={radius * 2 + strokeWidth}
+                    style={{ transform: 'rotate(-90deg)' }}
+                >
+                    <defs>
+                        <linearGradient id={gradientId} x1="0%" y1="0%" x2="100%" y2="0%">
+                            <stop offset="0%" stopColor={colors.start} />
+                            <stop offset="100%" stopColor={colors.end} />
+                        </linearGradient>
+                    </defs>
+                    
+                    {/* Background arc */}
+                    <circle
+                        stroke="#E5E7EB"
+                        fill="transparent"
+                        strokeWidth={strokeWidth}
+                        strokeDasharray={`${circumference * 0.5} ${circumference}`}
+                        r={normalizedRadius}
+                        cx={radius + strokeWidth / 2}
+                        cy={radius + strokeWidth / 2}
+                        strokeLinecap="round"
+                    />
+                    
+                    {/* Progress arc */}
+                    <circle
+                        stroke={`url(#${gradientId})`}
+                        fill="transparent"
+                        strokeWidth={strokeWidth}
+                        strokeDasharray={`${circumference * 0.5 * progress} ${circumference}`}
+                        r={normalizedRadius}
+                        cx={radius + strokeWidth / 2}
+                        cy={radius + strokeWidth / 2}
+                        strokeLinecap="round"
+                        style={{
+                            transition: 'stroke-dasharray 1.5s ease-in-out',
+                            filter: 'drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1))'
+                        }}
+                    />
+                </svg>
+                
+                {/* Center content */}
+                <div style={{
+                    position: 'absolute',
+                    top: '50%',
+                    left: '50%',
+                    transform: 'translate(-50%, -40%)',
+                    textAlign: 'center'
+                }}>
+                    <div style={{
+                        fontSize: '2rem',
+                        fontWeight: '700',
+                        color: '#111827',
+                        lineHeight: '1',
+                        marginBottom: '0.25rem'
+                    }}>
+                        {value.toFixed(1)}%
+                    </div>
+                </div>
+            </div>
+            
+            {/* Labels */}
+            <div style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                width: '100%',
+                maxWidth: '160px',
+                fontSize: '0.75rem',
+                color: '#9CA3AF',
+                fontWeight: '500'
+            }}>
+                <span>0</span>
+                <span>100</span>
+            </div>
+            
+            <div style={{
+                marginTop: '0.75rem',
+                fontSize: '0.875rem',
+                color: '#6B7280',
+                fontWeight: '500',
+                textTransform: 'uppercase',
+                letterSpacing: '0.05em'
+            }}>
+                {title}
+            </div>
+        </div>
+    );
+};
 
 const customStyles = {
     actionButton: { fontSize: 12, width: 150, color: 'white' },
@@ -82,15 +206,9 @@ const TrainingStats = (props) => {
                                 </div>
                             ) : (
                                 <GaugeChart
-                                    id='gauge-chart6'
-                                    style={{ width: '100%' }}
-                                    textColor={'#464a50'}
-                                    colors={[GRAPH_COLORS.RED, GRAPH_COLORS.YELLOW, GRAPH_COLORS.GREEN]}
-                                    animate={false}
-                                    nrOfLevels={30}
-                                    percent={trainingCompliance / 100}
-                                    needleColor='#345243'
-                                    formatTextValue={(value) => value}
+                                <ModernGauge 
+                                    value={trainingCompliance} 
+                                    title="COMPLIANCE LEVEL"
                                 />
                             )}
                         </CCardBody>
@@ -231,15 +349,9 @@ const PhishingStats = (props) => {
                         ) : (
                             <>
                                 <GaugeChart
-                                    id='gauge-chart6'
-                                    style={{ width: '100%' }}
-                                    textColor={'#374151'}
-                                    animate={true}
-                                    animateDuration={2000}
-                                    nrOfLevels={30}
-                                    percent={riskScore / 100}
-                                    needleColor='#6b7280'
-                                    formatTextValue={(value) => `${value}%`}
+                                <ModernGauge 
+                                    value={riskScore} 
+                                    title="RISK LEVEL"
                                 />
                                 <div style={{
                                     textAlign: 'center',
