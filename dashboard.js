@@ -37,6 +37,9 @@ import EmailTemplateSVG from 'src/assets/icons/email-templates';
 
 // Modern Gauge Component
 const ModernGauge = ({ value, title }) => {
+    // Ensure value is a valid number with fallback
+    const safeValue = typeof value === 'number' && !isNaN(value) ? value : 0;
+    
     const radius = 80;
     const strokeWidth = 12;
     const normalizedRadius = radius - strokeWidth * 2;
@@ -44,7 +47,7 @@ const ModernGauge = ({ value, title }) => {
     const strokeDasharray = `${circumference} ${circumference}`;
     
     // Calculate the stroke offset for a semi-circle (180 degrees)
-    const progress = value / 100;
+    const progress = safeValue / 100;
     const offset = circumference - (progress * circumference * 0.5); // 0.5 for semi-circle
     
     // Determine color based on risk score
@@ -127,7 +130,7 @@ const ModernGauge = ({ value, title }) => {
                         lineHeight: '1',
                         marginBottom: '0.25rem'
                     }}>
-                        {value.toFixed(1)}%
+                        {safeValue.toFixed(1)}%
                     </div>
                 </div>
             </div>
