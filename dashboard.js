@@ -205,7 +205,6 @@ const TrainingStats = (props) => {
                                     </div>
                                 </div>
                             ) : (
-                                <GaugeChart
                                 <ModernGauge 
                                     value={trainingCompliance} 
                                     title="COMPLIANCE LEVEL"
@@ -348,7 +347,6 @@ const PhishingStats = (props) => {
                             </div>
                         ) : (
                             <>
-                                <GaugeChart
                                 <ModernGauge 
                                     value={riskScore} 
                                     title="RISK LEVEL"
